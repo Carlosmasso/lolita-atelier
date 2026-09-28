@@ -1,0 +1,13 @@
+/* Vintage Goods (50Fox) es una fuente de pago con licencia web.
+   Copiad el archivo con licencia en public/fonts/VintageGoods.woff2
+   (y .woff si lo tenéis). Mientras no esté, se usa Dancing Script
+   como sustituta temporal para que la maqueta se vea parecida. */
+@font-face {
+  font-family: "Vintage Goods";
+  src: local("Vintage Goods"), local("VintageGoods"),
+       url("/fonts/VintageGoods.woff2") format("woff2"),
+       url("/fonts/VintageGoods.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
