@@ -18,7 +18,7 @@ export default function Hero() {
         </h1>
         <p className="hero-lead enter" style={delay(370)}>
           Mantas, baberos y ropa de cuna cosidos y bordados a mano, en series pequeñas y con telas naturales. Como los
-          hacía la abuela.
+          hacía nuestra yaya Lola.
         </p>
         <div className="hero-actions enter" style={delay(510)}>
           <a href="#coleccion" className="btn btn-solid">Ver la colección</a>

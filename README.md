@@ -66,7 +66,7 @@ Mientras no esté, los titulares caligráficos usan una sustituta incrustada (`s
 | `logo-horizontal.webp`         | Original del logo de la cabecera (la web usa una versión reducida, `src/assets/brand/logo.webp`, incrustada) |
 | `ramillete.webp`               | Historia, capítulo «Lazos que se volvían flores» |
 | `monograma.webp`               | Original del capítulo «Las tardes en su mesa de costura» (la web usa una versión reducida, `src/assets/brand/monograma.webp`, incrustada) |
-| `logo-sello.webp`              | Sello de la carta del taller, sello de la postal y pie |
+| `logo-sello.webp`              | Sello de la carta del taller y de la postal (el pie cierra con la firma «lolita · Made in Albacete») |
 | `logo-horizontal-salvia.webp`, `logo-sello-salvia.webp` | Reservados (redes, packaging, página de contacto) |
 | `favicon-32.png`, `favicon-180.png` | Pestaña del navegador y acceso directo en móvil |
 

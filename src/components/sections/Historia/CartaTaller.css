@@ -1,7 +1,7 @@
 .letter { position: relative; max-width: 720px; margin-inline: auto; padding: 60px 72px 64px; background-color: var(--superficie); background-image: repeating-linear-gradient(180deg, transparent 0 35px, rgba(142,151,121,.3) 35px 36px); background-position: 0 56px; box-shadow: var(--sombra); transform: rotate(-.6deg); }
 .letter p { font-family: var(--serif); font-weight: 360; font-size: 19px; line-height: 36px; font-variation-settings: "SOFT" 100; }
 .letter p + p { text-indent: 1.6em; }
-.letter .letter-sign { margin-top: 36px; text-indent: 0; text-align: right; font-family: var(--script); font-size: 34px; line-height: 36px; }
+.letter .letter-sign { margin-top: 36px; text-align: right; font-family: var(--script); font-size: 34px; line-height: 36px; }
 /* El sello va dentro de la carta y el texto lo rodea: fuera del papel su fondo blanco se vería como un recorte */
 .letter-stamp { float: right; width: 150px; height: auto; margin: -28px -30px 12px 20px; transform: rotate(6deg); mix-blend-mode: multiply; }
 @media (max-width: 560px) {
@@ -9,3 +9,8 @@
   .letter p { font-size: 17px; }
   .letter-stamp { width: 104px; margin: -24px -10px 8px 14px; }
 }
+/* Título y firma de la carta: también a 36 px, sobre las líneas del papel */
+.letter .letter-title { margin-bottom: 36px; font-family: var(--serif); font-style: italic; font-weight: 400; font-size: 24px; line-height: 36px; color: var(--salvia-hondo); font-variation-settings: "SOFT" 100, "WONK" 1; }
+.letter .letter-quote { font-style: italic; font-variation-settings: "SOFT" 100, "WONK" 1; }
+.letter .letter-sign { display: grid; justify-items: end; }
+.letter .letter-sign-name { font-family: var(--sans); font-size: 12px; letter-spacing: .2em; text-transform: uppercase; color: var(--cacao-suave); }

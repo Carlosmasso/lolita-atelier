@@ -4,6 +4,11 @@
 .story-head .sec-title { margin-top: 18px; }
 .story-lead { margin-top: 32px; font-family: var(--serif); font-weight: 320; font-size: clamp(24px, 2.6vw, 34px); line-height: 1.38; letter-spacing: -.01em; font-variation-settings: "SOFT" 100; }
 .story-lead em { font-style: italic; font-variation-settings: "SOFT" 100, "WONK" 1; }
+/* Retrato de Lola: mismo cuerpo de texto que los capítulos */
+.story-intro { margin-top: 48px; max-width: 34em; font-family: var(--serif); font-weight: 360; font-size: 20px; line-height: 1.7; font-variation-settings: "SOFT" 60; }
+.story-intro p + p { margin-top: 20px; }
+/* "Lo hacía.": la frase que sostiene el retrato, con voz propia */
+.story-intro .story-beat { font-style: italic; font-size: 26px; line-height: 1.4; color: var(--salvia-hondo); font-variation-settings: "SOFT" 100, "WONK" 1; }
 .chapters { position: relative; margin-top: 128px; display: grid; gap: 150px; }
 /* Hilo que cose la historia mientras se lee */
 .story-thread { position: absolute; left: 50%; top: -72px; width: 40px; height: calc(100% + 144px); transform: translateX(-50%); overflow: visible; pointer-events: none; }
@@ -11,18 +16,21 @@
   .story-thread { animation: thread-draw linear both; animation-timeline: view(); animation-range: entry 0% cover 75%; }
 }
 @keyframes thread-draw { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0 0 0 0); } }
-.values { margin-top: 168px; text-align: center; }
-.values-line { max-width: 21ch; margin-inline: auto; font-family: var(--serif); font-weight: 320; font-size: clamp(30px, 3.8vw, 52px); line-height: 1.28; letter-spacing: -.02em; font-variation-settings: "SOFT" 100; }
-.values-line em { font-style: italic; color: var(--salvia-hondo); font-variation-settings: "SOFT" 100, "WONK" 1; padding-bottom: .1em; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='10' viewBox='0 0 48 10'%3E%3Cpath d='M0,5 C8,1 16,9 24,5 S40,1 48,5' fill='none' stroke='%238E9779' stroke-width='2' stroke-dasharray='5 3.5' stroke-linecap='round'/%3E%3C/svg%3E") repeat-x 0 100% / 48px 10px; }
 /* Carta del taller en papel pautado */
 .letter-wrap { margin-top: 128px; }
+/* Cierre de la historia: una línea a mano, sola */
+.story-coda { margin-top: 128px; text-align: center; font-family: var(--script); font-size: clamp(30px, 3.4vw, 42px); line-height: 1.35; color: var(--cacao); }
 @media (max-width: 960px) {
   /* En móvil, el mismo espaciado que el resto de secciones */
   .story-sec { padding-block: 88px 96px; }
   .story-thread { display: none; }
   .chapters { margin-top: 80px; gap: 104px; }
-  .values { margin-top: 112px; }
   .letter-wrap { margin-top: 96px; }
+  .story-coda { margin-top: 96px; }
+}
+@media (max-width: 560px) {
+  .story-intro { font-size: 18px; }
+  .story-intro .story-beat { font-size: 23px; }
 }
 /* Movimiento reducido: todo llega a su estado final al instante; cambios de estado, avisos y jerarquía se mantienen */
 @media (prefers-reduced-motion: reduce) {

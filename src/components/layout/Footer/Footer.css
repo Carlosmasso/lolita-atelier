@@ -1,8 +1,7 @@
 /* Pie */
 .foot { padding-block: 72px 56px; font-size: 14px; color: var(--cacao-suave); }
 .foot-in { display: flex; justify-content: space-between; align-items: flex-end; gap: 32px; flex-wrap: wrap; }
-.foot-brand img { display: block; width: 150px; height: auto; mix-blend-mode: multiply; }
-.foot-brand p { margin-top: 14px; font-family: var(--serif); font-style: italic; font-size: 17px; color: var(--cacao); font-variation-settings: "SOFT" 100, "WONK" 1; }
+.foot-brand p { font-family: var(--serif); font-style: italic; font-size: 17px; color: var(--cacao); font-variation-settings: "SOFT" 100, "WONK" 1; }
 .foot nav { display: flex; gap: 24px; flex-wrap: wrap; }
 .foot a { text-decoration: none; }
 .foot a:hover { color: var(--cacao); }

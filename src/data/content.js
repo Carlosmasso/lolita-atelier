@@ -9,7 +9,7 @@ export const THREADS = [
 export const STEPS = [
   { title: "Elegimos la tela", text: "Algodones y linos naturales, lavados antes de cortar para que sean suaves desde el primer día." },
   { title: "Cortamos a mano", text: "Cada pieza se marca y se corta en el taller, en series pequeñas de veinte o treinta unidades." },
-  { title: "Bordamos la margarita", text: "La flor de la abuela, bordada punto a punto. Ninguna sale exactamente igual a otra." },
+  { title: "Bordamos la margarita", text: "La flor favorita de Lola, bordada punto a punto. Ninguna sale exactamente igual a otra." },
   { title: "Cerramos con un lazo", text: "Doblamos, envolvemos en papel de seda y atamos con el lazo que da origen a la flor." },
 ];
 
