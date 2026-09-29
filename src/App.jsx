@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 
 /* ------------------------------------------------------------------
    LOLITA ATELIER
@@ -78,7 +78,9 @@ body { margin: 0; }
   --script: 'Vintage Goods', 'Lolita Script Fallback', cursive;
   --serif: 'Fraunces Variable', 'Iowan Old Style', Georgia, serif;
   --sans: 'Questrial', 'Helvetica Neue', Arial, sans-serif;
-  --ease: cubic-bezier(.22, .8, .24, 1);
+  /* Curvas de MOTION.md: suaves, sin rebote ni sobrepaso */
+  --ease: cubic-bezier(.22, 1, .36, 1);
+  --ease-soft: cubic-bezier(.16, 1, .3, 1);
   --lino: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='w' x='0' y='0' width='1' height='1'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.012 .85' numOctaves='2' seed='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .16  0 0 0 0 .17  0 0 0 0 .1  1.3 0 0 0 -.5'/%3E%3C/filter%3E%3Cfilter id='t' x='0' y='0' width='1' height='1'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85 .012' numOctaves='2' seed='9' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1  0 0 0 0 .98  0 0 0 0 .92  1.2 0 0 0 -.52'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23w)' opacity='.55'/%3E%3Crect width='100%25' height='100%25' filter='url(%23t)' opacity='.35'/%3E%3C/svg%3E");
   background: var(--marfil);
   color: var(--cacao);
@@ -115,7 +117,7 @@ body { margin: 0; }
   display: inline-flex; align-items: center; justify-content: center;
   padding: 14px 26px; border-radius: 999px; border: 1px solid var(--cacao);
   font-size: 15px; font-weight: 500; letter-spacing: 0.01em;
-  transition: background .2s, color .2s, transform .15s var(--ease);
+  transition: background-color .22s ease, color .22s ease, transform .18s var(--ease);
   text-decoration: none;
 }
 .btn:active { transform: scale(.98); }
@@ -129,16 +131,21 @@ body { margin: 0; }
 .link-arrow:hover span { transform: translateX(4px); }
 
 /* Cabecera */
-.head { position: sticky; top: 0; z-index: 20; background: rgba(248,244,234,.92); backdrop-filter: blur(8px); border-bottom: 1px solid var(--linea); }
+/* Casi estática: al bajar, el papel se vuelve translúcido, aparece la línea y el logo se recoge un poco
+   (solo transform, sin tocar la altura). Arriba el fondo es opaco y del color de la página: el logo se
+   funde con multiply y necesita un fondo sólido debajo */
+.head { position: sticky; top: 0; z-index: 20; background: var(--marfil); backdrop-filter: blur(8px); border-bottom: 1px solid transparent; transition: background-color .4s var(--ease), border-color .4s var(--ease); }
+.head[data-scrolled="true"] { background: rgba(248,244,234,.92); border-bottom-color: var(--linea); }
 .head-in { display: flex; align-items: center; justify-content: space-between; height: 84px; }
 .logo { display: block; line-height: 0; }
-.logo img { height: 60px; width: auto; display: block; mix-blend-mode: multiply; }
+.logo img { height: 60px; width: auto; display: block; mix-blend-mode: multiply; transform-origin: left center; transition: transform .4s var(--ease); }
+.head[data-scrolled="true"] .logo img { transform: scale(.86); }
 .nav { display: flex; gap: 32px; font-size: 15px; }
 .nav a { text-decoration: none; padding-block: 4px; border-bottom: 1px dashed transparent; transition: border-color .2s; }
 .nav a:hover { border-bottom-color: var(--cacao); }
-.bag-btn { background: none; border: 1px solid var(--linea); border-radius: 999px; padding: 8px 16px; font-size: 15px; color: var(--cacao); display: flex; gap: 8px; align-items: center; transition: border-color .2s, transform .15s var(--ease); }
+.bag-btn { background: none; border: 1px solid var(--linea); border-radius: 999px; padding: 8px 16px; font-size: 15px; color: var(--cacao); display: flex; gap: 8px; align-items: center; transition: border-color .22s ease, transform .18s var(--ease); }
 .bag-btn:hover { border-color: var(--cacao); }
-.bag-btn:active { transform: scale(.97); }
+.bag-btn:active { transform: scale(.98); }
 .bag-count { display: inline-grid; place-items: center; min-width: 22px; height: 22px; border-radius: 999px; background: var(--mantequilla); color: var(--cacao); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
 
 /* Hero */
@@ -158,10 +165,19 @@ body { margin: 0; }
 .hero-note { position: absolute; top: -2%; left: -9%; font-family: var(--script); font-size: 30px; line-height: 1; transform: rotate(-8deg); pointer-events: none; }
 .hero-note svg { display: block; width: 80px; height: 62px; margin: 4px 0 0 64px; overflow: visible; }
 
-/* Margarita bordada: se cose pétalo a pétalo al cargar */
-.stitch-mask { stroke-dasharray: 1; stroke-dashoffset: 1; animation: stitch 1.1s ease-out forwards; }
-.daisy-center { opacity: 0; transform-origin: center; animation: knot .6s ease-out forwards; }
-@keyframes knot { from { opacity: 0; transform: scale(.6); } to { opacity: 1; transform: scale(1); } }
+/* Entrada: la ilustración se asienta primero (respira, no hace zoom); el texto llega después
+   con 70 ms entre bloques y la llamada a la acción al final */
+.hero-art { animation: settle 1.2s var(--ease-soft) both; }
+.enter { animation: reveal .9s var(--ease) both; animation-delay: var(--d, 0ms); }
+.hero-note { animation: fade .9s var(--ease) .7s both; }
+@keyframes settle { from { opacity: 0; transform: scale(1.03); } }
+@keyframes reveal { from { opacity: 0; transform: translateY(12px); } }
+@keyframes fade { from { opacity: 0; } }
+
+/* Margarita bordada: se cose pétalo a pétalo mientras la ilustración se asienta */
+.stitch-mask { stroke-dasharray: 1; stroke-dashoffset: 1; animation: stitch .9s var(--ease) forwards; }
+.daisy-center { opacity: 0; transform-origin: center; animation: knot .7s var(--ease) forwards; }
+@keyframes knot { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: scale(1); } }
 @keyframes stitch { to { stroke-dashoffset: 0; } }
 
 /* Cinta de grosgrain entre el hero y la historia */
@@ -169,11 +185,13 @@ body { margin: 0; }
 .cinta::before, .cinta::after { content: ""; position: absolute; left: 0; right: 0; border-top: 1.5px dashed rgba(91,63,46,.3); }
 .cinta::before { top: 7px; }
 .cinta::after { bottom: 7px; }
-.cinta-track { display: flex; width: max-content; animation: cinta 70s linear infinite; }
-.cinta:hover .cinta-track { animation-play-state: paused; }
+/* La cinta se desliza despacio y sin fin hacia la izquierda (lo lleva useDrift). Dos copias seguidas
+   de la fila hacen el bucle sin costura; los bordes se desvanecen. Nota: MOTION.md §26 desaconseja los
+   bucles constantes; aquí es una decisión expresa, con arranque y frenado suaves */
+.cinta-rail { display: flex; width: max-content; }
+.cinta-track { overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
 .cinta-row { display: flex; list-style: none; margin: 0; padding: 0; }
 .cinta-row li { display: flex; align-items: center; gap: 30px; padding-right: 30px; white-space: nowrap; font-family: var(--serif); font-style: italic; font-size: 20px; font-variation-settings: "SOFT" 100, "WONK" 1; }
-@keyframes cinta { to { transform: translateX(-50%); } }
 
 /* Secciones */
 .sec { padding-block: 120px 128px; border-top: 1px solid var(--linea); }
@@ -181,7 +199,7 @@ body { margin: 0; }
 .sec-intro { margin-top: 16px; max-width: 52ch; color: var(--cacao-suave); }
 
 /* Aparición suave al hacer scroll */
-.rv { opacity: 0; transform: translateY(24px); transition: opacity .9s var(--ease), transform .9s var(--ease); }
+.rv { opacity: 0; transform: translateY(12px); transition: opacity .8s var(--ease), transform .8s var(--ease); }
 .rv.in { opacity: 1; transform: none; }
 
 /* Historia */
@@ -206,7 +224,9 @@ body { margin: 0; }
 /* Fotos pegadas con cinta de papel */
 .snap { position: relative; justify-self: center; width: min(100%, 370px); background: var(--superficie); padding: 16px 16px 66px; box-shadow: var(--sombra); transform: rotate(-3deg); transition: transform .6s var(--ease); }
 .snap--r { transform: rotate(2.4deg); }
-.snap:hover { transform: rotate(0deg) scale(1.015); }
+/* Al pasar el ratón la foto solo respira: conserva su inclinación, no gira */
+.snap:hover { transform: rotate(-3deg) scale(1.015); }
+.snap--r:hover { transform: rotate(2.4deg) scale(1.015); }
 .snap::before { content: ""; position: absolute; top: -15px; left: 50%; width: 112px; height: 30px; transform: translateX(-50%) rotate(-4deg); background: rgba(246,227,181,.85); clip-path: polygon(2% 0, 98% 0, 100% 22%, 97% 42%, 100% 62%, 97% 82%, 99% 100%, 1% 100%, 3% 80%, 0 60%, 3% 40%, 0 20%); }
 .snap img { display: block; width: 100%; aspect-ratio: 1; object-fit: contain; background: #fff; mix-blend-mode: multiply; }
 .snap figcaption { position: absolute; left: 0; right: 0; bottom: 16px; padding-inline: 16px; text-align: center; font-family: var(--script); font-size: 25px; line-height: 1.1; }
@@ -227,15 +247,17 @@ body { margin: 0; }
 /* Colección */
 .col-head { display: flex; justify-content: space-between; align-items: end; gap: 32px; flex-wrap: wrap; }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.chip { background: transparent; border: 1px solid var(--linea); color: var(--cacao); padding: 8px 18px; border-radius: 999px; font-size: 15px; transition: background .2s, border-color .2s, transform .15s var(--ease); }
+.chip { background: transparent; border: 1px solid var(--linea); color: var(--cacao); padding: 8px 18px; border-radius: 999px; font-size: 15px; transition: background-color .22s ease, border-color .22s ease, color .22s ease, transform .18s var(--ease); }
 .chip:hover { border-color: var(--salvia); background: rgba(142,151,121,.12); }
-.chip:active { transform: scale(.97); }
+.chip:active { transform: scale(.98); }
 .chip[aria-pressed="true"] { background: var(--cacao); color: var(--superficie); border-color: var(--cacao); }
-.grid { margin-top: 64px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 72px 40px; align-items: start; }
-.item-media { aspect-ratio: 4 / 5; border-radius: 2px; overflow: hidden; position: relative; box-shadow: var(--sombra); transform: rotate(-.7deg); transition: transform .5s var(--ease); }
+/* Al cambiar de categoría la rejilla se funde, sin corte seco */
+.grid { margin-top: 64px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 72px 40px; align-items: start; animation: fade .5s var(--ease) both; }
+/* La muestra se queda quieta sobre la mesa; solo la tela se acerca un poco al pasar el ratón */
+.item-media { aspect-ratio: 4 / 5; border-radius: 2px; overflow: hidden; position: relative; box-shadow: var(--sombra); transform: rotate(-.7deg); }
 .grid article:nth-child(even) .item-media { transform: rotate(.6deg); }
-.grid article:hover .item-media { transform: translateY(-6px) rotate(0deg); }
-.item-media svg { width: 100%; height: 100%; display: block; }
+.item-media svg { width: 100%; height: 100%; display: block; transition: transform .6s var(--ease); }
+.grid article:hover .item-media svg { transform: scale(1.025); }
 /* Etiqueta de tela cosida a la muestra */
 .item-tag { position: absolute; left: 18px; top: 20px; padding: 5px 12px 5px 20px; background: var(--superficie); font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; clip-path: polygon(10px 0, 100% 0, 100% 100%, 10px 100%, 0 50%); }
 .item-tag::before { content: ""; position: absolute; left: 8px; top: 50%; width: 5px; height: 5px; border-radius: 50%; background: rgba(91,63,46,.4); transform: translateY(-50%); }
@@ -301,9 +323,14 @@ body { margin: 0; }
 .foot a:hover { color: var(--cacao); }
 
 /* Cesta */
-.veil { position: fixed; inset: 0; background: rgba(91,63,46,.3); z-index: 40; }
-.drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(420px, 100%); background: var(--superficie); z-index: 50; display: flex; flex-direction: column; animation: slidein .28s ease-out; }
-@keyframes slidein { from { transform: translateX(100%); } to { transform: none; } }
+/* La cesta llega sin barrer la pantalla: 20 px y un fundido, con un velo suave. Sale por el mismo camino */
+.veil { position: fixed; inset: 0; background: rgba(91,63,46,.3); z-index: 40; animation: fade .4s var(--ease) both; }
+.drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(420px, 100%); background: var(--superficie); z-index: 50; display: flex; flex-direction: column; animation: drawer-in .45s var(--ease) both; }
+.veil[data-leaving="true"] { animation: fade-out .3s var(--ease) both; }
+.drawer[data-leaving="true"] { animation: drawer-out .3s var(--ease) both; }
+@keyframes drawer-in { from { opacity: 0; transform: translateX(20px); } }
+@keyframes drawer-out { to { opacity: 0; transform: translateX(20px); } }
+@keyframes fade-out { to { opacity: 0; } }
 .drawer-head { display: flex; justify-content: space-between; align-items: center; padding: 24px 28px; border-bottom: 1px solid var(--linea); }
 .drawer-head h2 { font-family: var(--script); font-weight: 400; font-size: 38px; line-height: 1; }
 .close { background: none; border: none; font-size: 15px; color: var(--cacao); text-decoration: underline; text-underline-offset: 3px; }
@@ -324,7 +351,10 @@ body { margin: 0; }
 .drawer-foot .btn { width: 100%; }
 
 /* Aviso */
-.toast { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); background: var(--cacao); color: var(--superficie); padding: 12px 22px; border-radius: 999px; font-size: 15px; z-index: 60; }
+.toast { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); background: var(--cacao); color: var(--superficie); padding: 12px 22px; border-radius: 999px; font-size: 15px; z-index: 60; animation: toast-in .4s var(--ease) both; }
+.toast[data-leaving="true"] { animation: toast-out .3s var(--ease) both; }
+@keyframes toast-in { from { opacity: 0; transform: translate(-50%, 8px); } }
+@keyframes toast-out { to { opacity: 0; transform: translate(-50%, 8px); } }
 
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
@@ -368,13 +398,17 @@ body { margin: 0; }
   .letter p { font-size: 17px; }
   .letter-stamp { width: 104px; margin: -24px -10px 8px 14px; }
 }
+/* Movimiento reducido: todo llega a su estado final al instante; cambios de estado, avisos y jerarquía se mantienen */
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .stitch-mask { animation: none; stroke-dashoffset: 0; }
-  .daisy-center { animation: none; opacity: 1; }
-  .drawer, .cinta-track, .story-thread { animation: none; }
+  .la *, .la *::before, .la *::after {
+    animation-duration: .01ms !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+  .story-thread { animation: none; }
   .rv { opacity: 1; transform: none; }
-  .la * { transition: none !important; }
 }
 `;
 
@@ -551,7 +585,7 @@ function StitchedDaisy({ size = 420, petals = 14 }) {
               strokeWidth={p.width * 2 + 10}
               className="stitch-mask"
               transform={`rotate(${p.angle})`}
-              style={{ animationDelay: `${p.back ? 0.2 + (i % petals) * 0.07 : 0.55 + (i % petals) * 0.1}s` }}
+              style={{ animationDelay: `${p.back ? 0.3 + (i % petals) * 0.04 : 0.6 + (i % petals) * 0.05}s` }}
             />
           </mask>
         ))}
@@ -585,7 +619,7 @@ function StitchedDaisy({ size = 420, petals = 14 }) {
           ))}
 
           {/* Centro: cúpula de nudos franceses */}
-          <g className="daisy-center" style={{ animationDelay: `${0.55 + petals * 0.1}s` }}>
+          <g className="daisy-center" style={{ animationDelay: `${0.6 + petals * 0.05}s` }}>
             <g filter={`url(#${id("thread")})`}>
             <circle r="17.5" fill="#3B2F1E" opacity=".3" transform="translate(0.8 1.3)" filter={`url(#${id("soft")})`} />
             <circle r="16.5" fill={`url(#${id("dome")})`} />
@@ -683,8 +717,16 @@ function Fabric({ kind, tone, uid, withDaisy = true }) {
 /* ---------------------------- Secciones ---------------------------- */
 
 function Header({ count, onOpenBag }) {
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
-    <header className="head">
+    <header className="head" data-scrolled={scrolled}>
       <div className="wrap head-in">
         <a href="#inicio" className="logo">
           <img src={ASSETS.logo} alt="Lolita Atelier, inicio" width="480" height="209" />
@@ -703,24 +745,81 @@ function Header({ count, onOpenBag }) {
   );
 }
 
+// Desplazamiento horizontal continuo y lento de una pista con dos copias de su contenido.
+// La velocidad nunca salta: arranca desde parado cuando termina la entrada del hero, frena hasta
+// pararse al pasar el ratón y vuelve a arrancar al salir. Con movimiento reducido no se crea la
+// animación y la pista queda quieta.
+const DRIFT_PX_PER_S = 22;
+const DRIFT_START_MS = 1000;
+const DRIFT_EASE_MS = 450; // constante de tiempo con la que la velocidad se acerca a su objetivo
+
+function useDrift(ref) {
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || !el.animate || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    // Una vuelta recorre una copia (la mitad de la pista) a velocidad constante
+    const copyWidth = el.scrollWidth / 2;
+    const anim = el.animate([{ transform: "translateX(0)" }, { transform: "translateX(-50%)" }], {
+      duration: (copyWidth / DRIFT_PX_PER_S) * 1000,
+      iterations: Infinity,
+    });
+    anim.playbackRate = 0;
+
+    let rate = 0;
+    let target = 0;
+    let raf = null;
+    let last = 0;
+    const tick = (now) => {
+      const dt = last ? now - last : 16;
+      last = now;
+      rate += (target - rate) * (1 - Math.exp(-dt / DRIFT_EASE_MS));
+      if (Math.abs(target - rate) < 0.002) rate = target;
+      anim.playbackRate = rate;
+      raf = rate === target ? null : requestAnimationFrame(tick);
+    };
+    const glideTo = (t) => {
+      target = t;
+      if (raf === null) {
+        last = 0;
+        raf = requestAnimationFrame(tick);
+      }
+    };
+
+    const start = setTimeout(() => glideTo(1), DRIFT_START_MS);
+    const holder = el.parentElement;
+    const slow = () => glideTo(0);
+    const resume = () => glideTo(1);
+    holder.addEventListener("pointerenter", slow);
+    holder.addEventListener("pointerleave", resume);
+    return () => {
+      clearTimeout(start);
+      if (raf !== null) cancelAnimationFrame(raf);
+      holder.removeEventListener("pointerenter", slow);
+      holder.removeEventListener("pointerleave", resume);
+      anim.cancel();
+    };
+  }, [ref]);
+}
+
 function Hero() {
   return (
     <section id="inicio" className="wrap hero">
       <div>
-        <p className="eyebrow">Taller de costura en Albacete</p>
-        <h1>
+        <p className="eyebrow enter" style={{ "--d": "300ms" }}>Taller de costura en Albacete</p>
+        <h1 className="enter" style={{ "--d": "300ms" }}>
           <span className="h-serif">Textiles para los</span>
           <span className="h-script">primeros recuerdos</span>
         </h1>
-        <p className="hero-lead">
+        <p className="hero-lead enter" style={{ "--d": "370ms" }}>
           Mantas, baberos y ropa de cuna cosidos y bordados a mano, en series pequeñas y con telas naturales. Como los
           hacía la abuela.
         </p>
-        <div className="hero-actions">
+        <div className="hero-actions enter" style={{ "--d": "510ms" }}>
           <a href="#coleccion" className="btn btn-solid">Ver la colección</a>
           <a href="#historia" className="link-arrow">Cómo empezó todo <span aria-hidden="true">→</span></a>
         </div>
-        <ul className="hero-facts">
+        <ul className="hero-facts enter" style={{ "--d": "440ms" }}>
           {["Series de veinte piezas", "Telas naturales", "Bordado a mano"].map((t) => (
             <li key={t}><MiniFlower />{t}</li>
           ))}
@@ -751,18 +850,21 @@ const CINTA = [
 ];
 
 function Cinta() {
-  const row = (hidden) => (
-    <ul className="cinta-row" aria-hidden={hidden || undefined}>
-      {CINTA.map((t) => (
-        <li key={t}>{t}<MiniFlower /></li>
-      ))}
-    </ul>
-  );
+  const railRef = useRef(null);
+  useDrift(railRef);
+
   return (
     <div className="cinta">
       <div className="cinta-track">
-        {row(false)}
-        {row(true)}
+        <div className="cinta-rail" ref={railRef}>
+          {[false, true].map((copy) => (
+            <ul className="cinta-row" key={String(copy)} aria-hidden={copy || undefined}>
+              {CINTA.map((t) => (
+                <li key={t}>{t}<MiniFlower /></li>
+              ))}
+            </ul>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -880,7 +982,7 @@ function Coleccion({ cart, onAdd }) {
             ))}
           </div>
         </div>
-        <div className="grid">
+        <div className="grid" key={cat}>
           {list.map((p) => {
             const inBag = cart[p.id] > 0;
             return (
@@ -1156,7 +1258,7 @@ function Footer() {
   );
 }
 
-function Cesta({ cart, onClose, onChange }) {
+function Cesta({ cart, onClose, onChange, leaving }) {
   const lines = PRODUCTS.filter((p) => cart[p.id] > 0);
   const subtotal = lines.reduce((s, p) => s + p.price * cart[p.id], 0);
   const freeFrom = 80;
@@ -1169,8 +1271,8 @@ function Cesta({ cart, onClose, onChange }) {
 
   return (
     <>
-      <div className="veil" onClick={onClose} />
-      <aside className="drawer" role="dialog" aria-modal="true" aria-labelledby="cesta-title">
+      <div className="veil" onClick={onClose} data-leaving={leaving} />
+      <aside className="drawer" role="dialog" aria-modal="true" aria-labelledby="cesta-title" data-leaving={leaving}>
         <div className="drawer-head">
           <h2 id="cesta-title">Tu cesta</h2>
           <button className="close" onClick={onClose} autoFocus>Cerrar</button>
@@ -1239,19 +1341,38 @@ function useReveal() {
   }, []);
 }
 
+// Lo que sale de pantalla se desmonta cuando termina su animación de salida (300 ms)
+const EXIT_MS = 300;
+
 export default function App() {
   const [cart, setCart] = useState({});
-  const [bagOpen, setBagOpen] = useState(false);
-  const [toast, setToast] = useState(null);
+  const [bag, setBag] = useState("closed"); // closed | open | leaving
+  const [toast, setToast] = useState(null); // { text, leaving }
+  const bagTimer = useRef();
+  const toastTimers = useRef([]);
 
   useReveal();
 
   const count = Object.values(cart).reduce((a, b) => a + b, 0);
 
+  const openBag = () => {
+    clearTimeout(bagTimer.current);
+    setBag("open");
+  };
+
+  const closeBag = useCallback(() => {
+    setBag("leaving");
+    clearTimeout(bagTimer.current);
+    bagTimer.current = setTimeout(() => setBag("closed"), EXIT_MS);
+  }, []);
+
   const showToast = (text) => {
-    setToast(text);
-    clearTimeout(window.__lolitaToast);
-    window.__lolitaToast = setTimeout(() => setToast(null), 2600);
+    toastTimers.current.forEach(clearTimeout);
+    setToast({ text, leaving: false });
+    toastTimers.current = [
+      setTimeout(() => setToast((t) => t && { ...t, leaving: true }), 2600),
+      setTimeout(() => setToast(null), 2600 + EXIT_MS),
+    ];
   };
 
   const change = (id, delta) =>
@@ -1271,7 +1392,7 @@ export default function App() {
     <div className="la">
       <style>{CSS}</style>
       <a className="skip" href="#contenido">Saltar al contenido</a>
-      <Header count={count} onOpenBag={() => setBagOpen(true)} />
+      <Header count={count} onOpenBag={openBag} />
       <main id="contenido">
         <Hero />
         <Cinta />
@@ -1282,8 +1403,8 @@ export default function App() {
         <Cartas />
       </main>
       <Footer />
-      {bagOpen && <Cesta cart={cart} onClose={() => setBagOpen(false)} onChange={change} />}
-      {toast && <div className="toast" role="status">{toast}</div>}
+      {bag !== "closed" && <Cesta cart={cart} onClose={closeBag} onChange={change} leaving={bag === "leaving"} />}
+      {toast && <div className="toast" role="status" data-leaving={toast.leaving}>{toast.text}</div>}
     </div>
   );
 }
