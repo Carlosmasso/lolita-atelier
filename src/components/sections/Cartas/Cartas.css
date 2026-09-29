@@ -1,0 +1,25 @@
+/* Cartas: una postal con sello y matasellos */
+.letters { background: var(--mantequilla); border-top: none; }
+.postal { position: relative; display: grid; grid-template-columns: 1.15fr 1fr; gap: 56px; padding: 56px; background: var(--superficie); border-radius: 3px; box-shadow: 0 2px 4px rgba(91,63,46,.08), 0 40px 60px -40px rgba(91,63,46,.5); }
+.postal-msg { padding-right: 56px; border-right: 1.5px dashed var(--linea); }
+.postal-msg .letter-sign { margin-top: 28px; font-family: var(--script); font-size: 30px; line-height: 1; }
+.postal-side { position: relative; padding-top: 168px; }
+.stamp { position: absolute; top: 0; right: 0; width: 150px; padding: 9px; background: radial-gradient(circle, transparent 3.2px, #EDE3CC 3.7px) -6px -6px / 12px 12px; transform: rotate(3deg); filter: drop-shadow(0 2px 3px rgba(91,63,46,.2)); }
+.stamp-in { background: var(--superficie); padding: 14px 8px; }
+.stamp-in img { display: block; width: 100%; height: auto; mix-blend-mode: multiply; }
+.postmark { position: absolute; top: 26px; right: 128px; width: 118px; height: 118px; transform: rotate(-14deg); color: var(--cacao); opacity: .5; pointer-events: none; }
+.postal-form { display: grid; gap: 16px; }
+.postal-form label { font-size: 15px; font-weight: 500; }
+.postal .input { max-width: none; border: none; border-bottom: 1.5px dashed rgba(91,63,46,.45); border-radius: 0; background: transparent; padding: 10px 2px; font-size: 18px; }
+.postal .input:focus { border-bottom: 1.5px solid var(--cacao); }
+.postal-form .btn { justify-self: start; margin-top: 8px; }
+.form-msg { margin-top: 14px; font-size: 15px; min-height: 24px; }
+.form-msg[data-kind="error"] { color: #8A3B26; }
+@media (max-width: 960px) {
+  .postal { grid-template-columns: 1fr; }
+  .postal { padding: 36px 28px; gap: 36px; }
+  .postal-msg { padding: 0 0 36px; border-right: none; border-bottom: 1.5px dashed var(--linea); }
+  .postal-side { padding-top: 0; }
+  .stamp { position: relative; width: 120px; margin: 0 0 28px auto; }
+  .postmark { top: 8px; right: 104px; width: 92px; height: 92px; }
+}

@@ -1,0 +1,24 @@
+/* Cabecera */
+
+/* Casi estática: al bajar, el papel se vuelve translúcido, aparece la línea y el logo se recoge un poco
+   (solo transform, sin tocar la altura). Arriba el fondo es opaco y del color de la página: el logo se
+   funde con multiply y necesita un fondo sólido debajo */
+.head { position: sticky; top: 0; z-index: 20; background: var(--marfil); backdrop-filter: blur(8px); border-bottom: 1px solid transparent; transition: background-color .4s var(--ease), border-color .4s var(--ease); }
+.head[data-scrolled="true"] { background: rgba(248,244,234,.92); border-bottom-color: var(--linea); }
+.head-in { display: flex; align-items: center; justify-content: space-between; height: 84px; }
+.logo { display: block; line-height: 0; }
+.logo img { height: 60px; width: auto; display: block; mix-blend-mode: multiply; transform-origin: left center; transition: transform .4s var(--ease); }
+.head[data-scrolled="true"] .logo img { transform: scale(.86); }
+.nav { display: flex; gap: 32px; font-size: 15px; }
+.nav a { text-decoration: none; padding-block: 4px; border-bottom: 1px dashed transparent; transition: border-color .2s; }
+.nav a:hover { border-bottom-color: var(--cacao); }
+.bag-btn { background: none; border: 1px solid var(--linea); border-radius: 999px; padding: 8px 16px; font-size: 15px; color: var(--cacao); display: flex; gap: 8px; align-items: center; transition: border-color .22s ease, transform .18s var(--ease); }
+.bag-btn:hover { border-color: var(--cacao); }
+.bag-btn:active { transform: scale(.98); }
+.bag-count { display: inline-grid; place-items: center; min-width: 22px; height: 22px; border-radius: 999px; background: var(--mantequilla); color: var(--cacao); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+@media (max-width: 960px) {
+  .nav { display: none; }
+}
+@media (max-width: 560px) {
+  .logo img { height: 46px; }
+}

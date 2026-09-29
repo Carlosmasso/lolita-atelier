@@ -1,0 +1,19 @@
+/* Tipografías de marca. Questrial y la sustituta de Vintage Goods viajan incrustadas en el bundle
+   (ver build.assetsInlineLimit en vite.config.js); Fraunces llega desde @fontsource en main.jsx. */
+@font-face { font-family: 'Questrial'; src: url("../assets/fonts/questrial.woff2") format('woff2'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'Lolita Script Fallback'; src: url("../assets/fonts/lolita-script-fallback.woff2") format('woff2'); font-weight: 400; font-display: swap; }
+
+/* Vintage Goods (50Fox) es una fuente de pago con licencia web.
+   Mientras no esté, se usa la sustituta incrustada ("Lolita Script Fallback").
+   Para activarla: copiad el archivo con licencia en public/fonts/VintageGoods.woff2 (y .woff si lo
+   tenéis) y añadid estas líneas al final de src, detrás de los local():
+       , url("/fonts/VintageGoods.woff2") format("woff2"), url("/fonts/VintageGoods.woff") format("woff")
+   No las dejéis puestas sin el archivo: cada visita haría peticiones fallidas y retrasaría
+   el titular del hero. */
+@font-face {
+  font-family: "Vintage Goods";
+  src: local("Vintage Goods"), local("VintageGoods");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}

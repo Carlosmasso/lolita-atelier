@@ -1,0 +1,23 @@
+.chapter { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 128px; align-items: center; }
+.chapter--flip .chapter-text { order: 2; }
+.chapter-n { display: flex; align-items: center; gap: 12px; font-family: var(--serif); font-style: italic; font-size: 18px; color: var(--salvia-hondo); font-variation-settings: "SOFT" 100, "WONK" 1; }
+.chapter-n::after { content: ""; width: 40px; border-top: 1.5px dashed currentColor; }
+.chapter h3 { margin-top: 16px; font-family: var(--serif); font-weight: 380; font-size: clamp(30px, 3vw, 40px); line-height: 1.12; letter-spacing: -.015em; font-variation-settings: "SOFT" 100; }
+.chapter p { margin-top: 20px; font-family: var(--serif); font-weight: 360; font-size: 20px; line-height: 1.7; max-width: 32em; font-variation-settings: "SOFT" 60; }
+/* Fotos pegadas con cinta de papel */
+.snap { position: relative; justify-self: center; width: min(100%, 370px); background: var(--superficie); padding: 16px 16px 66px; box-shadow: var(--sombra); transform: rotate(-3deg); transition: transform .6s var(--ease); }
+.snap--r { transform: rotate(2.4deg); }
+/* Al pasar el ratón la foto solo respira: conserva su inclinación, no gira */
+.snap:hover { transform: rotate(-3deg) scale(1.015); }
+.snap--r:hover { transform: rotate(2.4deg) scale(1.015); }
+.snap::before { content: ""; position: absolute; top: -15px; left: 50%; width: 112px; height: 30px; transform: translateX(-50%) rotate(-4deg); background: rgba(246,227,181,.85); clip-path: polygon(2% 0, 98% 0, 100% 22%, 97% 42%, 100% 62%, 97% 82%, 99% 100%, 1% 100%, 3% 80%, 0 60%, 3% 40%, 0 20%); }
+.snap img { display: block; width: 100%; aspect-ratio: 1; object-fit: contain; background: #fff; mix-blend-mode: multiply; }
+.snap figcaption { position: absolute; left: 0; right: 0; bottom: 16px; padding-inline: 16px; text-align: center; font-family: var(--script); font-size: 25px; line-height: 1.1; }
+@media (max-width: 960px) {
+  .chapter { grid-template-columns: 1fr; }
+  .chapter { gap: 56px; }
+  .chapter--flip .chapter-text { order: 0; }
+}
+@media (max-width: 560px) {
+  .chapter p { font-size: 18px; }
+}

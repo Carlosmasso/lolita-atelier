@@ -1,9 +1,15 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-// Questrial y la sustituta de Vintage Goods van incrustadas en App.jsx
-import "@fontsource-variable/fraunces/full.css"; // serif editorial: historia, titulares y notas
+// Fraunces, la serif editorial (historia, titulares y notas). Questrial y la sustituta de Vintage Goods
+// van incrustadas: ver styles/fonts.css
+import "@fontsource-variable/fraunces/full.css";
 import "@fontsource-variable/fraunces/full-italic.css";
-import "./fonts.css";
+// Estilos globales, en orden: fuentes, tokens y base, piezas de interfaz compartidas y movimiento.
+// Cada componente importa su propio CSS
+import "./styles/fonts.css";
+import "./styles/base.css";
+import "./styles/ui.css";
+import "./styles/motion.css";
 import App from "./App.jsx";
 
 ReactDOM.createRoot(document.getElementById("root")).render(

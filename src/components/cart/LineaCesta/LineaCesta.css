@@ -1,0 +1,8 @@
+.line { display: grid; grid-template-columns: 64px 1fr auto; gap: 16px; padding-block: 20px; border-bottom: 1px solid var(--linea); align-items: center; }
+.line-thumb { width: 64px; height: 80px; border-radius: 2px; overflow: hidden; }
+.line-thumb svg { width: 100%; height: 100%; display: block; }
+.line-name { font-family: var(--sans); font-size: 16px; line-height: 1.2; }
+.line-meta { font-size: 14px; color: var(--cacao-suave); font-variant-numeric: tabular-nums; }
+.qty { display: flex; align-items: center; gap: 10px; margin-top: 6px; font-size: 14px; }
+.qty button { width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--linea); background: none; color: var(--cacao); line-height: 1; }
+.qty button:hover { border-color: var(--cacao); }

@@ -1,0 +1,26 @@
+/* Hero */
+.hero { padding-block: 56px 104px; display: grid; grid-template-columns: 1.05fr 1fr; gap: 64px; align-items: center; }
+.hero h1 { margin-top: 22px; font-weight: 400; }
+.h-serif { display: block; font-family: var(--serif); font-weight: 330; font-size: clamp(36px, 4.2vw, 58px); line-height: 1.05; letter-spacing: -.02em; font-variation-settings: "SOFT" 100; }
+.h-script { display: block; font-family: var(--script); font-size: clamp(60px, 7.6vw, 108px); line-height: .98; margin-top: 2px; margin-left: -.03em; }
+.hero-lead { margin-top: 28px; font-size: 19px; max-width: 36ch; color: var(--cacao-suave); }
+.hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 28px; margin-top: 36px; }
+.hero-facts { list-style: none; padding: 0; margin: 48px 0 0; display: flex; flex-wrap: wrap; gap: 10px 24px; font-size: 14px; color: var(--cacao-suave); }
+.hero-facts li { display: flex; align-items: center; gap: 8px; }
+.hero-figure { margin: 0; position: relative; }
+.hero-art { position: relative; aspect-ratio: 1; background: radial-gradient(ellipse at 38% 30%, rgba(255,250,235,.14), transparent 60%), var(--lino), var(--salvia); border-radius: 50% 50% 4px 4px / 42% 42% 4px 4px; display: grid; place-items: center; overflow: hidden; box-shadow: 0 30px 50px -34px rgba(58,52,30,.6); }
+.hero-art::after { content: ""; position: absolute; inset: 14px; border: 1.5px dashed rgba(248,244,234,.55); border-radius: inherit; pointer-events: none; }
+/* Nota a mano sobre la esquina del arco */
+.hero-note { position: absolute; top: -2%; left: -9%; font-family: var(--script); font-size: 30px; line-height: 1; transform: rotate(-8deg); pointer-events: none; }
+.hero-note svg { display: block; width: 80px; height: 62px; margin: 4px 0 0 64px; overflow: visible; }
+/* Entrada: la ilustración se asienta primero (respira, no hace zoom); el texto llega después
+   con 70 ms entre bloques y la llamada a la acción al final */
+.hero-art { animation: settle 1.2s var(--ease-soft) both; }
+.hero-note { animation: fade .9s var(--ease) .7s both; }
+@media (max-width: 960px) {
+  .hero { grid-template-columns: 1fr; }
+  .hero { padding-block: 40px 80px; gap: 56px; }
+  .hero-figure { max-width: 520px; width: 100%; margin-inline: auto; }
+  .hero-note { top: -18px; left: 0; font-size: 26px; }
+  .hero-note svg { width: 60px; height: 46px; margin-left: 40px; }
+}

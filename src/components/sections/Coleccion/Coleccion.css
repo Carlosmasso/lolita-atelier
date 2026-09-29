@@ -1,0 +1,22 @@
+/* Colección */
+.col-head { display: flex; justify-content: space-between; align-items: end; gap: 32px; flex-wrap: wrap; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { background: transparent; border: 1px solid var(--linea); color: var(--cacao); padding: 8px 18px; border-radius: 999px; font-size: 15px; transition: background-color .22s ease, border-color .22s ease, color .22s ease, transform .18s var(--ease); }
+.chip:hover { border-color: var(--salvia); background: rgba(142,151,121,.12); }
+.chip:active { transform: scale(.98); }
+.chip[aria-pressed="true"] { background: var(--cacao); color: var(--superficie); border-color: var(--cacao); }
+/* Al cambiar de categoría la rejilla se funde, sin corte seco */
+.grid { margin-top: 64px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 72px 40px; align-items: start; animation: fade .5s var(--ease) both; }
+.grid article:nth-child(even) .item-media { transform: rotate(.6deg); }
+.grid article:hover .item-media svg { transform: scale(1.025); }
+/* Responsive */
+@media (min-width: 961px) {
+  /* Muestras escalonadas, como prendidas a mano en un panel */
+  .grid article:nth-child(3n+2) { margin-top: 72px; }
+}
+@media (max-width: 960px) {
+  .grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 560px) {
+  .grid { grid-template-columns: 1fr; }
+}

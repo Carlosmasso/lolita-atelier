@@ -1,0 +1,16 @@
+/* Proceso: los pasos cuelgan de un mismo hilo */
+.steps-wrap { margin-top: 72px; }
+.steps-thread { display: block; width: 100%; height: auto; overflow: visible; }
+.steps { margin: 12px 0 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px; list-style: none; padding: 0; }
+.step { position: relative; }
+.step-n { display: block; font-family: var(--serif); font-style: italic; font-weight: 300; font-size: 50px; line-height: 1; color: var(--salvia-hondo); font-variation-settings: "SOFT" 100, "WONK" 1; }
+.step h3 { font-family: var(--sans); font-weight: 400; font-size: 19px; margin-top: 14px; }
+.step p { margin-top: 10px; font-size: 15px; color: var(--cacao-suave); }
+@media (max-width: 960px) {
+  .steps-thread { display: none; }
+  .steps { grid-template-columns: repeat(2, 1fr); row-gap: 48px; }
+  .step { border-top: 1.5px dashed var(--salvia); padding-top: 20px; }
+}
+@media (max-width: 560px) {
+  .steps { grid-template-columns: 1fr; }
+}
