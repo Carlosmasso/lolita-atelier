@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import { useState, useMemo, useEffect, useLayoutEffect, useRef, useCallback } from "react";
 
 /* ------------------------------------------------------------------
    LOLITA ATELIER
@@ -51,8 +51,8 @@ const euro = (n) => n.toLocaleString("es-ES", { style: "currency", currency: "EU
 
 const CSS = `
 @font-face { font-family: 'Questrial'; src: url(${ASSETS.questrial}) format('woff2'); font-weight: 400; font-display: swap; }
-/* Vintage Goods (de pago): se usa si está instalada o en /fonts. Si no, Dancing Script como sustituta temporal. */
-@font-face { font-family: 'Vintage Goods'; src: local('Vintage Goods'), local('VintageGoods'), url('/fonts/VintageGoods.woff2') format('woff2'); font-display: swap; }
+/* Vintage Goods (de pago): se usa si está instalada (ver src/fonts.css). Si no, esta sustituta incrustada. */
+@font-face { font-family: 'Vintage Goods'; src: local('Vintage Goods'), local('VintageGoods'); font-display: swap; }
 @font-face { font-family: 'Lolita Script Fallback'; src: url(${ASSETS.script}) format('woff2'); font-weight: 400; font-display: swap; }
 
 html { scroll-behavior: smooth; scroll-padding-top: 96px; }
@@ -521,8 +521,59 @@ function StitchedDaisy({ size = 420, petals = 14 }) {
   const stem = stemStitch([0, 30], [4, 62], [-5, 88], [2, 112], 34);
   const leaf = fishboneLeaf(26, 6.2);
 
-  return (
-    <svg viewBox="-110 -110 220 220" width={size} height={size} role="img" aria-label="Margarita bordada a mano">
+  // Rendimiento: el filtro de hilo (ruido, relieve y luz especular) es carísimo. Si se aplica a pétalos
+  // que se revelan con máscaras animadas, Chrome lo recalcula en cada fotograma y la entrada va a
+  // trompicones. Por eso la flor se dibuja una sola vez en una plantilla oculta y cada capa (tallo,
+  // pétalos de atrás, de delante y centro) se convierte en un PNG a la resolución de la pantalla.
+  // Lo que se anima son solo las máscaras sobre esos mapas de bits. (Una imagen SVG no basta: Chrome
+  // la guarda como vectores y vuelve a pasar los filtros en cada repintado.)
+  const sourceRef = useRef(null);
+  const shownRef = useRef(null);
+  const [layers, setLayers] = useState(null);
+  useLayoutEffect(() => {
+    const src = sourceRef.current;
+    const xml = new XMLSerializer();
+    const defs = xml.serializeToString(src.querySelector("defs"));
+    const shown = shownRef.current.getBoundingClientRect().width || 420;
+    const px = Math.round(Math.min(1600, Math.max(512, shown * (window.devicePixelRatio || 1))));
+    const names = ["stem", "back", "front", "center"];
+    const svgUrls = names.map((name) => {
+      const markup = xml.serializeToString(src.querySelector(`[data-layer="${name}"]`));
+      const doc = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-110 -110 220 220" width="${px}" height="${px}">${defs}${markup}</svg>`;
+      return URL.createObjectURL(new Blob([doc], { type: "image/svg+xml" }));
+    });
+    const toPng = async (svgUrl) => {
+      const img = new Image();
+      img.src = svgUrl;
+      await img.decode();
+      const canvas = document.createElement("canvas");
+      canvas.width = canvas.height = px;
+      canvas.getContext("2d").drawImage(img, 0, 0, px, px);
+      const blob = await new Promise((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject()), "image/png"));
+      return URL.createObjectURL(blob);
+    };
+
+    let cancelled = false;
+    let inUse = [];
+    Promise.all(svgUrls.map(toPng))
+      .then((pngUrls) => {
+        svgUrls.forEach((u) => URL.revokeObjectURL(u));
+        return pngUrls;
+      })
+      .catch(() => svgUrls) // si el lienzo falla, las capas vectoriales siguen viéndose bien (solo más lentas)
+      .then((urls) => {
+        inUse = urls;
+        if (cancelled) urls.forEach((u) => URL.revokeObjectURL(u));
+        else setLayers(Object.fromEntries(names.map((n, i) => [n, urls[i]])));
+      });
+    return () => {
+      cancelled = true;
+      inUse.forEach((u) => URL.revokeObjectURL(u));
+    };
+  }, [art]);
+
+  const source = (
+    <svg ref={sourceRef} viewBox="-110 -110 220 220" width="0" height="0" aria-hidden="true" style={{ display: "none" }}>
       <defs>
         {/* Relieve del hilo: la luminancia hace de mapa de alturas y cada puntada recibe su brillo */}
         <filter id={id("thread")} x="-15%" y="-15%" width="130%" height="130%" colorInterpolationFilters="sRGB">
@@ -575,25 +626,10 @@ function StitchedDaisy({ size = 420, petals = 14 }) {
           </radialGradient>
         ))}
 
-        {art.list.map((p, i) => (
-          <mask id={id(`m-${i}`)} key={i} maskUnits="userSpaceOnUse" x="-110" y="-110" width="220" height="220">
-            <path
-              d={`M0,-10 L0,${-(14 + p.length + 4)}`}
-              pathLength="1"
-              fill="none"
-              stroke="#fff"
-              strokeWidth={p.width * 2 + 10}
-              className="stitch-mask"
-              transform={`rotate(${p.angle})`}
-              style={{ animationDelay: `${p.back ? 0.3 + (i % petals) * 0.04 : 0.6 + (i % petals) * 0.05}s` }}
-            />
-          </mask>
-        ))}
       </defs>
 
-      {/* El filtro va dentro de cada máscara: envolver máscaras animadas con un filtro hace que Chrome borre la flor al acabar la animación */}
-      <g filter={`url(#${id("thread")})`}>
-        {/* Tallo en punto de tallo y hoja en punto de espiga */}
+      {/* Tallo en punto de tallo y hoja en punto de espiga */}
+      <g data-layer="stem" filter={`url(#${id("thread")})`}>
         <g fill="none" strokeLinecap="round">
           <path d={stem} stroke="#4E5A39" strokeWidth="2.1" />
           <path d={stem} stroke="#76845A" strokeWidth="0.9" transform="translate(-0.35 -0.2)" />
@@ -605,34 +641,82 @@ function StitchedDaisy({ size = 420, petals = 14 }) {
         </g>
       </g>
 
-      <g transform="translate(0 -12) scale(0.9)">
-          {art.list.map((p, i) => (
-            <g key={i} mask={`url(#${id(`m-${i}`)})`}>
-              <g transform={`rotate(${r2(p.angle)})`} filter={`url(#${id("thread")})`}>
+      {/* Pétalos y centro en el espacio de la flor (translate(0 -12) scale(0.9) se aplica al mostrarlos) */}
+      {[true, false].map((back) => (
+        <g key={String(back)} data-layer={back ? "back" : "front"}>
+          {art.list.map((p, i) =>
+            p.back === back ? (
+              <g key={i} transform={`rotate(${r2(p.angle)})`} filter={`url(#${id("thread")})`}>
                 {/* Sombra propia de cada pétalo sobre los de atrás */}
                 {!p.back && <path d={p.outline} fill="#3B2F1E" opacity=".28" transform="translate(0.8 1.4)" filter={`url(#${id("soft")})`} />}
                 {/* Relleno: asoma entre puntadas y crea las estrías del hilo */}
                 <path d={p.outline} fill={p.back ? "#A99A7C" : "#BFB194"} />
                 <path d={p.stitches} fill="none" stroke={`url(#${id(`sat-${i}`)})`} strokeWidth="1.12" strokeLinecap="round" opacity={0.82 + p.sheen * 0.18} />
               </g>
-            </g>
-          ))}
+            ) : null
+          )}
+        </g>
+      ))}
 
-          {/* Centro: cúpula de nudos franceses */}
-          <g className="daisy-center" style={{ animationDelay: `${0.6 + petals * 0.05}s` }}>
-            <g filter={`url(#${id("thread")})`}>
-            <circle r="17.5" fill="#3B2F1E" opacity=".3" transform="translate(0.8 1.3)" filter={`url(#${id("soft")})`} />
-            <circle r="16.5" fill={`url(#${id("dome")})`} />
-            {art.knots.map((k, i) => (
-              <g key={i} transform={`translate(${k.x} ${k.y}) rotate(${k.twist})`}>
-                <circle r={k.r} fill={`url(#${id(`knot-${k.tone}`)})`} />
-                <path d={`M${-k.r * 0.55},${-k.r * 0.2} Q0,${k.r * 0.45} ${k.r * 0.55},${-k.r * 0.2}`} fill="none" stroke="#6E4E2C" strokeOpacity=".45" strokeWidth=".28" />
-              </g>
-            ))}
-            </g>
+      {/* Centro: cúpula de nudos franceses */}
+      <g data-layer="center" filter={`url(#${id("thread")})`}>
+        <circle r="17.5" fill="#3B2F1E" opacity=".3" transform="translate(0.8 1.3)" filter={`url(#${id("soft")})`} />
+        <circle r="16.5" fill={`url(#${id("dome")})`} />
+        {art.knots.map((k, i) => (
+          <g key={i} transform={`translate(${k.x} ${k.y}) rotate(${k.twist})`}>
+            <circle r={k.r} fill={`url(#${id(`knot-${k.tone}`)})`} />
+            <path d={`M${-k.r * 0.55},${-k.r * 0.2} Q0,${k.r * 0.45} ${k.r * 0.55},${-k.r * 0.2}`} fill="none" stroke="#6E4E2C" strokeOpacity=".45" strokeWidth=".28" />
           </g>
+        ))}
       </g>
     </svg>
+  );
+
+  // Cada pétalo se revela con un trazo animado sobre su eje. Los trazos de una misma capa comparten máscara
+  const stitchMask = (back) => (
+    <mask id={id(back ? "m-back" : "m-front")} maskUnits="userSpaceOnUse" x="-110" y="-110" width="220" height="220">
+      {art.list.map((p, i) =>
+        p.back === back ? (
+          <path
+            key={i}
+            d={`M0,-10 L0,${-(14 + p.length + 4)}`}
+            pathLength="1"
+            fill="none"
+            stroke="#fff"
+            strokeWidth={p.width * 2 + 10}
+            className="stitch-mask"
+            transform={`rotate(${p.angle})`}
+            style={{ animationDelay: `${p.back ? 0.3 + (i % petals) * 0.04 : 0.6 + (i % petals) * 0.05}s` }}
+          />
+        ) : null
+      )}
+    </mask>
+  );
+  const layer = (name) => <image href={layers[name]} x="-110" y="-110" width="220" height="220" />;
+
+  return (
+    <>
+      {!layers && source}
+      <svg ref={shownRef} viewBox="-110 -110 220 220" width={size} height={size} role="img" aria-label="Margarita bordada a mano">
+        {/* Las máscaras se montan con las capas: así el bordado empieza a coserse cuando todo está listo */}
+        {layers && (
+          <defs>
+            {stitchMask(true)}
+            {stitchMask(false)}
+          </defs>
+        )}
+        {layers && (
+          <>
+            {layer("stem")}
+            <g transform="translate(0 -12) scale(0.9)">
+              <g mask={`url(#${id("m-back")})`}>{layer("back")}</g>
+              <g mask={`url(#${id("m-front")})`}>{layer("front")}</g>
+              <g className="daisy-center" style={{ animationDelay: `${0.6 + petals * 0.05}s` }}>{layer("center")}</g>
+            </g>
+          </>
+        )}
+      </svg>
+    </>
   );
 }
 
