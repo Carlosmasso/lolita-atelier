@@ -11,6 +11,9 @@ import "./styles/base.css";
 import "./styles/ui.css";
 import "./styles/motion.css";
 import App from "./App.jsx";
+import { initRouter } from "./router/router";
+
+initRouter();
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>

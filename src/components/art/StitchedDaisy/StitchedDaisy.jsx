@@ -3,6 +3,10 @@ import { fishboneLeaf, r2, satinPetal, seeded, stemStitch } from "@/lib/stitches
 import "./StitchedDaisy.css";
 
 // Margarita grande del hero, bordada en punto de satén y revelada pétalo a pétalo
+// Capas ya rasterizadas, por número de pétalos y resolución: al volver a la portada desde una pieza
+// la margarita no se vuelve a pintar. Viven lo que dura la visita, por eso no se liberan
+const layerCache = new Map();
+
 export default function StitchedDaisy({ size = 420, petals = 14 }) {
   const uid = useMemo(() => Math.random().toString(36).slice(2, 8), []);
   const art = useMemo(() => {
@@ -55,6 +59,11 @@ export default function StitchedDaisy({ size = 420, petals = 14 }) {
     const defs = xml.serializeToString(src.querySelector("defs"));
     const shown = shownRef.current.getBoundingClientRect().width || 420;
     const px = Math.round(Math.min(1600, Math.max(512, shown * (window.devicePixelRatio || 1))));
+    const cacheKey = `${petals}-${px}`;
+    if (layerCache.has(cacheKey)) {
+      setLayers(layerCache.get(cacheKey));
+      return;
+    }
     const names = ["stem", "back", "front", "center"];
     const svgUrls = names.map((name) => {
       const markup = xml.serializeToString(src.querySelector(`[data-layer="${name}"]`));
@@ -82,14 +91,19 @@ export default function StitchedDaisy({ size = 420, petals = 14 }) {
       .catch(() => svgUrls) // si el lienzo falla, las capas vectoriales siguen viéndose bien (solo más lentas)
       .then((urls) => {
         inUse = urls;
-        if (cancelled) urls.forEach((u) => URL.revokeObjectURL(u));
-        else setLayers(Object.fromEntries(names.map((n, i) => [n, urls[i]])));
+        if (cancelled) {
+          urls.forEach((u) => URL.revokeObjectURL(u));
+          return;
+        }
+        const ready = Object.fromEntries(names.map((n, i) => [n, urls[i]]));
+        layerCache.set(cacheKey, ready);
+        setLayers(ready);
       });
     return () => {
       cancelled = true;
-      inUse.forEach((u) => URL.revokeObjectURL(u));
+      if (!layerCache.has(cacheKey)) inUse.forEach((u) => URL.revokeObjectURL(u));
     };
-  }, [art]);
+  }, [art, petals]);
 
   const source = (
     <svg ref={sourceRef} viewBox="-110 -110 220 220" width="0" height="0" aria-hidden="true" style={{ display: "none" }}>

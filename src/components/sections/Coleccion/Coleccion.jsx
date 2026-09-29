@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Reveal from "@/components/ui/Reveal/Reveal";
 import { CATEGORIES, PRODUCTS } from "@/data/catalog";
-import Pieza from "./Pieza";
+import Pieza from "@/components/pieza/Pieza/Pieza";
 import "./Coleccion.css";
 
 export default function Coleccion({ items, onAdd }) {

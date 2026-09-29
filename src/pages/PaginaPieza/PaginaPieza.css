@@ -1,0 +1,24 @@
+/* Ficha de una pieza: imagen a la izquierda, lo esencial a la derecha y fijo mientras se mira la imagen */
+.pdp { padding-block: 32px 128px; }
+.pdp-back { display: inline-flex; gap: 8px; align-items: baseline; font-size: 15px; color: var(--cacao-suave); text-decoration: none; }
+.pdp-back span { transition: transform .25s var(--ease); }
+/* Espejo del «Cómo empezó todo →»: la flecha se mueve hacia donde lleva */
+.pdp-back:hover span { transform: translateX(-4px); }
+.pdp-back:hover { color: var(--cacao); }
+.pdp-main { margin-top: 28px; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 80px; align-items: start; }
+.pdp-info { position: sticky; top: 116px; }
+/* En escritorio, imagen y miniaturas caben a la vez en la ventana, también en un portátil */
+@media (min-width: 961px) {
+  .pdp-main .gallery { width: min(100%, max(360px, calc((100dvh - 292px) * .8))); }
+}
+.pdp-moment { font-family: var(--serif); font-style: italic; font-size: 19px; color: var(--salvia-hondo); font-variation-settings: "SOFT" 100, "WONK" 1; }
+.pdp-name { margin-top: 10px; font-family: var(--serif); font-weight: 330; font-size: clamp(38px, 4.2vw, 56px); line-height: 1.08; letter-spacing: -.02em; font-variation-settings: "SOFT" 100; }
+.pdp-material { margin-top: 20px; max-width: 40ch; font-size: 17px; color: var(--cacao-suave); }
+.pdp-price { margin-top: 24px; font-size: 22px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.pdp-buy { margin-top: 28px; display: grid; justify-items: start; gap: 14px; }
+.pdp-status { min-height: 24px; font-size: 15px; color: var(--cacao-suave); }
+.pdp-open-bag { padding: 0; background: none; border: none; color: var(--cacao); text-decoration: underline; text-underline-offset: 3px; }
+@media (max-width: 960px) {
+  .pdp-main { grid-template-columns: 1fr; gap: 40px; }
+  .pdp-info { position: static; }
+}

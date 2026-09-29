@@ -1,7 +1,10 @@
 import SmallDaisy from "../SmallDaisy/SmallDaisy";
 
+// Encuadres de la muestra: la pieza entera, o un detalle de la esquina con la margarita y el pespunte
+const VIEWBOX = { full: "0 0 400 500", detail: "230 288 170 212" };
+
 // Muestras textiles generadas en SVG (sin imágenes externas)
-export default function Fabric({ kind, tone, uid, withDaisy = true }) {
+export default function Fabric({ kind, tone, uid, withDaisy = true, view = "full" }) {
   const id = `f-${uid}`;
   let pattern;
   if (kind === "vichy") {
@@ -35,7 +38,7 @@ export default function Fabric({ kind, tone, uid, withDaisy = true }) {
     );
   }
   return (
-    <svg viewBox="0 0 400 500" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <svg viewBox={VIEWBOX[view]} preserveAspectRatio="xMidYMid slice" aria-hidden="true">
       <defs>{pattern}</defs>
       <rect width="400" height="500" fill={`url(#${id})`} />
       {/* Dobladillo con pespunte */}

@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { FREE_SHIPPING_FROM } from "@/data/catalog";
 import { euro } from "@/lib/format";
+import Link from "@/router/Link";
 import LineaCesta from "../LineaCesta/LineaCesta";
 import "./Cesta.css";
 
@@ -24,7 +25,7 @@ export default function Cesta({ lines, subtotal, onClose, onChange, leaving }) {
           {lines.length === 0 ? (
             <div className="empty">
               <p>Todavía no has elegido ninguna pieza.</p>
-              <a href="#coleccion" className="btn btn-line" onClick={onClose}>Ver la colección</a>
+              <Link to="/#coleccion" className="btn btn-line" onClick={onClose}>Ver la colección</Link>
             </div>
           ) : (
             lines.map(({ product, qty }) => <LineaCesta key={product.id} product={product} qty={qty} onChange={onChange} />)

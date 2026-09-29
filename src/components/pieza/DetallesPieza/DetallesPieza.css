@@ -1,0 +1,10 @@
+/* Desplegables con pespunte como separador (el mismo código de marca que la postal y los antetítulos) */
+.pdp-details { margin-top: 44px; border-top: 1.5px dashed var(--linea); }
+.pdp-details details { border-bottom: 1.5px dashed var(--linea); }
+.pdp-details summary { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding-block: 18px; cursor: pointer; list-style: none; font-size: 16px; font-weight: 500; }
+.pdp-details summary::-webkit-details-marker { display: none; }
+/* Galón que gira al abrir (MOTION.md §20) */
+.pdp-details summary::after { content: ""; width: 8px; height: 8px; margin-right: 4px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: translateY(-3px) rotate(45deg); transition: transform .3s var(--ease); }
+.pdp-details details[open] summary::after { transform: translateY(2px) rotate(-135deg); }
+.pdp-detail-body { display: grid; gap: 10px; padding-bottom: 22px; max-width: 46ch; font-size: 16px; color: var(--cacao-suave); }
+.pdp-inline-link { color: var(--cacao); text-underline-offset: 3px; }

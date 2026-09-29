@@ -7,6 +7,10 @@
 .rv { opacity: 0; transform: translateY(12px); transition: opacity .8s var(--ease), transform .8s var(--ease); }
 .rv.in { opacity: 1; transform: none; }
 @keyframes fade-out { to { opacity: 0; } }
+/* Cambio de página: fundido suave y la muestra de tela viaja entre la tarjeta y la galería
+   (View Transitions API; sin ella, o con movimiento reducido, el cambio es inmediato) */
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: .5s; animation-timing-function: cubic-bezier(.22, 1, .36, 1); }
+::view-transition-group(pieza-media) { animation-duration: .55s; animation-timing-function: cubic-bezier(.22, 1, .36, 1); }
 /* Movimiento reducido: todo llega a su estado final al instante; cambios de estado, avisos y jerarquía se mantienen */
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }

@@ -1,0 +1,7 @@
+.pdp-related { margin-top: 144px; }
+.pdp-related .grid { margin-top: 48px; }
+/* Sin el escalonado de la colección: aquí son solo tres piezas en fila */
+.pdp-related .grid article:nth-child(3n+2) { margin-top: 0; }
+@media (max-width: 960px) {
+  .pdp-related { margin-top: 104px; }
+}

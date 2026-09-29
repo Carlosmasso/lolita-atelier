@@ -13,17 +13,20 @@ npm run dev
 
 ```
 src/
-  main.jsx            Arranque: fuentes, estilos globales y App
-  App.jsx             Compone la página y guarda el estado compartido (cesta, panel de la cesta, aviso)
+  main.jsx            Arranque: fuentes, estilos globales, router y App
+  App.jsx             Elige la página según la dirección y guarda el estado compartido (cesta, panel, aviso)
+  router/             Router mínimo (History API): Link, navigate, transición compartida entre páginas
+  pages/              Home (portada), PaginaPieza (/piezas/:slug), NoEncontrada
   assets/             Logo, monograma y fuentes de marca (se incrustan en el bundle, ver vite.config.js)
   styles/             fonts · base (tokens, fondo, tipografía, .wrap, .sec) · ui (botones, campos) · motion
   data/               Contenido: catálogo, hilos, pasos del taller, frases de la cinta
   lib/                Funciones puras: formato de precios, validación, geometría de las puntadas
-  hooks/              useCart, usePresence, useToast, useInView, useScrolled, useDrift
+  hooks/              useCart, usePresence, useToast, useInView, useScrolled, useDrift, useDocumentMeta
   components/
     layout/           Header, Footer
-    sections/         Hero, Cinta, Historia (Capitulo, CartaTaller), Coleccion (Pieza), Proceso,
+    sections/         Hero, Cinta, Historia (Capitulo, CartaTaller, Fieles), Coleccion, Proceso,
                       Personaliza (BastidorBordado), Cartas (Sello)
+    pieza/            Pieza (tarjeta), Galeria, DetallesPieza, OtrasPiezas
     cart/             Cesta, LineaCesta
     art/              StitchedDaisy, SmallDaisy, MiniFlower, Fabric (ilustraciones SVG)
     ui/               Reveal, Aviso
@@ -31,6 +34,8 @@ src/
 
 - Cada componente vive en su carpeta con su CSS al lado; los estilos compartidos están en `src/styles/`.
 - Las importaciones usan el alias `@/` para `src/` (configurado en `vite.config.js` y `jsconfig.json`).
+- Cada pieza tiene su página en `/piezas/<slug>` (el `slug` está en `data/catalog.js`; no cambiarlo para no romper enlaces compartidos). Al entrar desde la colección, la muestra de tela viaja hasta la galería con la View Transitions API; en navegadores sin ella, o con movimiento reducido, el cambio es inmediato.
+- **Publicación:** al ser direcciones reales, el servidor debe devolver `index.html` para cualquier ruta (fallback de SPA). `vite dev` y `vite preview` ya lo hacen; en Netlify basta un `public/_redirects` con `/* /index.html 200`, y en Vercel una regla `rewrites` equivalente.
 - El movimiento sigue `MOTION.md`. Las animaciones de salida (cesta, aviso) duran `EXIT_MS` (`hooks/usePresence.js`), que debe coincidir con su CSS.
 
 ## Sistema visual
